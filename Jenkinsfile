@@ -27,7 +27,9 @@ pipeline {
             steps {
                 script {
                         sh '''
-                        echo "nothing here yet"
+                        kubectl apply -f ./k8s -n dev
+                        kubectl rollout restart deployment flask-deployment  --namespace=dev
+                        kubectl rollout restart deployment nginx-deployment  --namespace=dev
                         '''
                 }
             }
