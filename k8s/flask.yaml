@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+  labels:
+    app: flask-app
+spec:
+  replicas: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: flask-app        # must be the same value as the label in the template 
+  template:
+    metadata:
+      labels:
+        app: flask-app     # this label is assigned to each pod in the set
+    spec:
+      containers:
+      - name: flask-container
+        image: mattneedstolearn/trio-redo-flask:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: credentials   # references the Secret named credentials
+              key: dbname       # referencing the username key under the stringData property
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: credentials   # references the Secret named credentials
+              key: passwd       # referencing the password key under the stringData property
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app
+spec:
+  selector:
+    app: flask-app
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+  type: ClusterIP

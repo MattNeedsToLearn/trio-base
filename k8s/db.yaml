@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  containers:
+  - name: mysql
+    image: mattneedstolearn/trio-redo-db:latest
+    ports:
+    - containerPort: 3306
+    env:
+    - name: DBNAME
+      valueFrom:
+        secretKeyRef:
+          name: credentials   # references the Secret named credentials
+          key: dbname       # referencing the username key under the stringData property
+    - name: MYSQLPW
+      valueFrom:
+        secretKeyRef:
+          name: credentials   # references the Secret named credentials
+          key: passwd       # referencing the password key under the stringData property
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
